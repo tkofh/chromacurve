@@ -78,10 +78,10 @@ export default defineComponent({
       for (let i = 0; i <= samples; i++) {
         const progress = i / samples
         out.push(
-          `hsl(${solve(hue.value, progress)}, ${solve(
-            saturation.value,
+          `hsl(${solve(hue.value as CurveConfig, progress)}, ${solve(
+            saturation.value as CurveConfig,
             progress
-          )}%, ${solve(lightness.value, progress)}%)`
+          )}%, ${solve(lightness.value as CurveConfig, progress)}%)`
         )
       }
 
