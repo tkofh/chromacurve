@@ -1,7 +1,7 @@
 <template>
   <div class="h-screen flex space-x-4 items-stretch">
     <div class="overflow-auto">
-      <div class="space-y-2 p-4">
+      <div class="space-y-2 p-4 pr-2">
         <CurveEditor
           v-model="hue"
           title="Hue"
@@ -19,25 +19,36 @@
           :default-end="100"
         />
         <CurveEditor
-          v-model="lightness"
+          v-model="brightness"
           title="Brightness"
-          :min="100"
-          :max="0"
-          :default-start="95"
+          :min="0"
+          :max="100"
+          :default-start="100"
           :default-end="20"
         />
       </div>
     </div>
-    <div class="py-4 pr-4 flex-grow flex">
-      <div
-        class="rounded-lg shadow-lg shadow-lg flex-grow flex flex-col overflow-hidden"
-      >
-        <div
-          v-for="(color, index) in colors"
-          :key="color + index"
-          :style="{ backgroundColor: color }"
-          class="h-full flex-shrink w-full"
-        ></div>
+    <div class="flex-grow flex overflow-y-auto">
+      <div class="p-4 pl-2 w-full">
+        <div class="rounded-lg shadow-lg">
+          <div
+            v-for="(color, index) in colors"
+            :key="color + index"
+            :style="{ backgroundColor: color.hex }"
+            class="h-6 w-full flex justify-between px-2 items-center"
+          >
+            <span
+              class="block rounded-sm h-4 pl-1 pr-4 leading-4 bg-black text-white text-xs"
+            >
+              {{ color.hex }}
+            </span>
+            <span
+              class="block rounded-sm h-4 pr-1 pl-4 leading-4 bg-white text-black text-xs"
+            >
+              {{ color.hex }}
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -45,19 +56,13 @@
 
 <script lang="ts">
 import { computed, defineComponent, ref } from '@nuxtjs/composition-api'
-import Bezier from '~/lib/Bezier'
+import { generate } from '@k-vyn/coloralgorithm/src/index.ts'
+import { Color } from '@k-vyn/coloralgorithm/src/types.ts'
 
 interface CurveConfig {
   start: number
   end: number
-  curve: Bezier
-}
-
-const solve = (config: CurveConfig, progress: number) => {
-  const curveProgress = config.curve.solve(progress)
-  return Math.round(
-    config.end * curveProgress + config.start * (1 - curveProgress)
-  )
+  curve: number[]
 }
 
 export default defineComponent({
@@ -65,33 +70,38 @@ export default defineComponent({
   setup() {
     const hue = ref<CurveConfig | null>(null)
     const saturation = ref<CurveConfig | null>(null)
-    const lightness = ref<CurveConfig | null>(null)
+    const brightness = ref<CurveConfig | null>(null)
 
-    const samples = 500
+    const steps = 100
 
-    const colors = computed<string[]>(() => {
-      if (!hue.value || !saturation.value || !lightness.value) {
+    const colors = computed<Color[]>(() => {
+      if (!hue.value || !saturation.value || !brightness.value) {
         return []
       }
 
-      const out = []
-      for (let i = 0; i <= samples; i++) {
-        const progress = i / samples
-        out.push(
-          `hsl(${solve(hue.value as CurveConfig, progress)}, ${solve(
-            saturation.value as CurveConfig,
-            progress
-          )}%, ${solve(lightness.value as CurveConfig, progress)}%)`
-        )
-      }
+      const { colors } = generate({
+        steps,
+        hue: hue.value,
+        saturation: {
+          curve: saturation.value.curve,
+          start: saturation.value.start * 0.01,
+          end: saturation.value.end * 0.01,
+          rate: 1,
+        },
+        brightness: {
+          curve: brightness.value.curve,
+          start: brightness.value.start * 0.01,
+          end: brightness.value.end * 0.01,
+        },
+      })[0]
 
-      return out
+      return colors
     })
 
     return {
       hue,
       saturation,
-      lightness,
+      brightness,
       colors,
     }
   },

@@ -44,7 +44,7 @@
           x1="0"
           y1="0"
           :x2="x1 * 1.6"
-          :y2="(100 - y1) * 1.6"
+          :y2="y1 * 1.6"
           stroke-width="2px"
           class="stroke-current text-green-500"
           marker-end="url(#dot)"
@@ -52,7 +52,7 @@
         <line
           x1="160"
           y1="160"
-          :x2="x2 * 1.6"
+          :x2="(100 - x2) * 1.6"
           :y2="(100 - y2) * 1.6"
           stroke-width="2px"
           class="stroke-current text-green-500"
@@ -107,7 +107,6 @@
 
 <script lang="ts">
 import { computed, defineComponent, ref, watch } from '@nuxtjs/composition-api'
-import Bezier from '~/lib/Bezier'
 
 export default defineComponent({
   name: 'CurveEditor',
@@ -140,13 +139,13 @@ export default defineComponent({
     const end = ref<number>(props.defaultEnd)
 
     const x1 = ref(25)
-    const y1 = ref(100)
-    const x2 = ref(75)
+    const y1 = ref(0)
+    const x2 = ref(25)
     const y2 = ref(0)
     const d = computed(
       () =>
-        `M 0 0 C ${x1.value * 1.6} ${(100 - y1.value) * 1.6}, ${
-          x2.value * 1.6
+        `M 0 0 C ${x1.value * 1.6} ${y1.value * 1.6}, ${
+          (100 - x2.value) * 1.6
         } ${(100 - y2.value) * 1.6}, 160, 160`
     )
 
@@ -154,12 +153,16 @@ export default defineComponent({
       [x1, y1, x2, y2, start, end],
       () => {
         emit('input', {
-          curve: new Bezier(
+          // x1: x1.value * 0.01,
+          // y1: (100 - y1.value) * 0.01,
+          // x2: x2.value * 0.01,
+          // y2: (100 - y2.value) * 0.01,
+          curve: [
             x1.value * 0.01,
-            (100 - y1.value) * 0.01,
+            y1.value * 0.01,
             x2.value * 0.01,
-            (100 - y2.value) * 0.01
-          ),
+            y2.value * 0.01,
+          ],
           start: start.value,
           end: end.value,
         })
