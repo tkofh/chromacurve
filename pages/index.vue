@@ -95,6 +95,22 @@ export default defineComponent({
         },
       })[0]
 
+      console.log({
+        steps,
+        hue: hue.value,
+        saturation: {
+          curve: saturation.value.curve,
+          start: saturation.value.start * 0.01,
+          end: saturation.value.end * 0.01,
+          rate: 1,
+        },
+        brightness: {
+          curve: brightness.value.curve,
+          start: brightness.value.start * 0.01,
+          end: brightness.value.end * 0.01,
+        },
+      })
+
       return colors
     })
 
