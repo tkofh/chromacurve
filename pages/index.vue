@@ -56,8 +56,24 @@
 
 <script lang="ts">
 import { computed, defineComponent, ref } from '@nuxtjs/composition-api'
-import { generate } from '@k-vyn/coloralgorithm/src/index.ts'
-import { Color } from '@k-vyn/coloralgorithm/src/types.ts'
+import { generate } from '@k-vyn/coloralgorithm'
+
+type Color = {
+  step: number
+  hue: number
+  saturation: number
+  brightness: number
+  isMajor: boolean
+  isLocked: boolean
+  hex: string
+  hsl: number[]
+  hsv: number[]
+  lab: number[]
+  rgbString: string
+  rgbArray: number[]
+  rgbaString: string
+  rgbaArray: number[]
+}
 
 interface CurveConfig {
   start: number
@@ -81,7 +97,11 @@ export default defineComponent({
 
       const { colors } = generate({
         steps,
-        hue: hue.value,
+        hue: {
+          curve: hue.value.curve,
+          start: hue.value.start * 1,
+          end: hue.value.end * 1,
+        },
         saturation: {
           curve: saturation.value.curve,
           start: saturation.value.start * 0.01,
@@ -95,21 +115,36 @@ export default defineComponent({
         },
       })[0]
 
-      console.log({
-        steps,
-        hue: hue.value,
-        saturation: {
-          curve: saturation.value.curve,
-          start: saturation.value.start * 0.01,
-          end: saturation.value.end * 0.01,
-          rate: 1,
-        },
-        brightness: {
-          curve: brightness.value.curve,
-          start: brightness.value.start * 0.01,
-          end: brightness.value.end * 0.01,
-        },
-      })
+      console.log(
+        JSON.stringify([
+          {
+            properties: {
+              steps,
+              hue: {
+                curve: hue.value.curve,
+                start: hue.value.start * 1,
+                end: hue.value.end * 1,
+              },
+              saturation: {
+                curve: saturation.value.curve,
+                start: saturation.value.start * 0.01,
+                end: saturation.value.end * 0.01,
+                rate: 1,
+              },
+              brightness: {
+                curve: brightness.value.curve,
+                start: brightness.value.start * 0.01,
+                end: brightness.value.end * 0.01,
+              },
+            },
+            options: {
+              minorSteps: [],
+              provideInverted: false,
+              rotation: 'clockwise',
+            },
+          },
+        ])
+      )
 
       return colors
     })
