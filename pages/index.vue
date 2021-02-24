@@ -26,6 +26,30 @@
           :default-start="100"
           :default-end="20"
         />
+        <div class="flex flex-col space-y-1">
+          <label for="rate">Saturation Rate</label>
+          <input
+            id="rate"
+            v-model="rate"
+            name="rate"
+            type="range"
+            min="0"
+            max="2"
+            step="0.01"
+          />
+        </div>
+        <div class="flex flex-col space-y-1">
+          <label for="rotation">Rotation</label>
+          <select
+            id="rotation"
+            v-model="rotation"
+            name="rotation"
+            class="border border-gray-300 rounded p-1 w-full"
+          >
+            <option value="cw">Clockwise</option>
+            <option value="ccw">Counter Clockwise</option>
+          </select>
+        </div>
       </div>
     </div>
     <div class="flex-grow flex overflow-y-auto">
@@ -35,7 +59,7 @@
             v-for="(color, index) in colors"
             :key="color + index"
             :style="{ backgroundColor: color.hex }"
-            class="h-6 w-full flex justify-between px-2 items-center"
+            class="h-5 w-full flex justify-between px-2 items-center"
           >
             <span
               class="block rounded-sm h-4 pl-1 pr-4 leading-4 bg-black text-white text-xs"
@@ -85,8 +109,13 @@ export default defineComponent({
   name: 'Index',
   setup() {
     const hue = ref<CurveConfig | null>(null)
+
     const saturation = ref<CurveConfig | null>(null)
+    const rate = ref<number>(1)
+
     const brightness = ref<CurveConfig | null>(null)
+
+    const rotation = ref<'cw' | 'ccw'>('cw')
 
     const steps = 100
 
@@ -95,7 +124,7 @@ export default defineComponent({
         return []
       }
 
-      const { colors } = generate({
+      const properties = {
         steps,
         hue: {
           curve: hue.value.curve,
@@ -106,45 +135,24 @@ export default defineComponent({
           curve: saturation.value.curve,
           start: saturation.value.start * 0.01,
           end: saturation.value.end * 0.01,
-          rate: 1,
+          rate: rate.value,
         },
         brightness: {
           curve: brightness.value.curve,
           start: brightness.value.start * 0.01,
           end: brightness.value.end * 0.01,
         },
-      })[0]
+      }
+      const options = {
+        minorSteps: [],
+        provideInverted: false,
+        rotation: rotation.value,
+      }
 
-      console.log(
-        JSON.stringify([
-          {
-            properties: {
-              steps,
-              hue: {
-                curve: hue.value.curve,
-                start: hue.value.start * 1,
-                end: hue.value.end * 1,
-              },
-              saturation: {
-                curve: saturation.value.curve,
-                start: saturation.value.start * 0.01,
-                end: saturation.value.end * 0.01,
-                rate: 1,
-              },
-              brightness: {
-                curve: brightness.value.curve,
-                start: brightness.value.start * 0.01,
-                end: brightness.value.end * 0.01,
-              },
-            },
-            options: {
-              minorSteps: [],
-              provideInverted: false,
-              rotation: 'clockwise',
-            },
-          },
-        ])
-      )
+      const { colors } = generate(properties, options)[0]
+
+      // eslint-disable-next-line no-console
+      console.log(JSON.stringify([{ properties, options }]))
 
       return colors
     })
@@ -152,7 +160,9 @@ export default defineComponent({
     return {
       hue,
       saturation,
+      rate,
       brightness,
+      rotation,
       colors,
     }
   },
