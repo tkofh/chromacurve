@@ -50,6 +50,17 @@
             <option value="ccw">Counter Clockwise</option>
           </select>
         </div>
+        <div class="flex flex-col space-y-1">
+          <label for="steps">Step Count</label>
+          <input
+            id="steps"
+            v-model="steps"
+            type="number"
+            name="steps"
+            min="1"
+            max="100"
+          />
+        </div>
       </div>
     </div>
     <div class="flex-grow flex overflow-y-auto">
@@ -117,7 +128,7 @@ export default defineComponent({
 
     const rotation = ref<'cw' | 'ccw'>('cw')
 
-    const steps = 100
+    const steps = ref<number>(50)
 
     const colors = computed<Color[]>(() => {
       if (!hue.value || !saturation.value || !brightness.value) {
@@ -125,7 +136,7 @@ export default defineComponent({
       }
 
       const properties = {
-        steps,
+        steps: steps.value * 1,
         hue: {
           curve: hue.value.curve,
           start: hue.value.start * 1,
@@ -158,6 +169,7 @@ export default defineComponent({
     })
 
     return {
+      steps,
       hue,
       saturation,
       rate,
